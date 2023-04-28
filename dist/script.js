@@ -74,11 +74,15 @@ for (let i = 0; i < modelFiles.length; i++) {
                 if (child.isMesh) {
                     // Look for the baked mesh and set its material
                     child.material = material
+
+            // Apply a rotation to the mesh's matrix
+            const rotation = new THREE.Matrix4().makeRotationY(Math.PI / 2)
+            child.applyMatrix4(rotation)
                 }
             })
             
-            //Rotate the loaded scene
-            gltf.scene.rotation.y = Math.PI / 2;
+            // //Rotate the loaded scene
+            // gltf.scene.rotation.y = Math.PI / 2;
            
             // Add the model to the scene
             scene.add(gltf.scene)
@@ -120,6 +124,8 @@ camera.position.set(30, 10, 30)
 scene.add(camera)
 
 const controls = new OrbitControls(camera, canvas)
+// Disable user interaction with the object
+controls.enabled = true
 controls.enableDamping = false
 controls.rotateSpeed = 0.3; // Adjust rotation speed
 controls.zoomSpeed = 0.1; // Adjust zoom speed
@@ -165,25 +171,53 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.outputEncoding = THREE.sRGBEncoding
 
-/**
- * Animate
- */
+// /**
+//  * Animate
+//  */
+// const clock = new THREE.Clock()
+
+// const tick = () =>
+// {
+//     const elapsedTime = clock.getElapsedTime()
+
+//     models.forEach(model => {
+//         model.rotation.y += Math.PI / 2 * clock.getDelta();
+//     });
+
+//     controls.update()
+
+//     renderer.render(scene, camera)
+
+//     window.requestAnimationFrame(tick)
+
+// }
+
+// tick()
+
 const clock = new THREE.Clock()
+const fixedTimeStep = 1 / 60 // Update the scene at 60 fps
 
-const tick = () =>
-{
-    const elapsedTime = clock.getElapsedTime()
+const tick = () => {
+  const elapsedTime = clock.getElapsedTime()
 
-    models.forEach(model => {
-        model.rotation.y += Math.PI / 2 * clock.getDelta();
-    });
+  // Calculate the time since the last frame
+  const deltaTime = clock.getDelta()
 
-    controls.update()
+  // Update the OrbitControls
+  controls.update(deltaTime)
 
-    renderer.render(scene, camera)
+  // Update the objects in the scene
+  models.forEach(model => {
+    model.rotation.y += Math.PI / 2 * deltaTime
+  })
 
-    window.requestAnimationFrame(tick)
+  // Render the scene
+  renderer.render(scene, camera)
 
+  // Request the next frame at a fixed rate
+  window.requestAnimationFrame(tick)
 }
 
+// Start the animation loop
 tick()
+
